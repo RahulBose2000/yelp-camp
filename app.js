@@ -15,7 +15,7 @@ const passport = require('passport');
 const LocalStrategy = require('passport-local')
 const User = require('./models/user')
 
-const monogoSanitize = require('express-mongo-sanitize');
+const mongoSanitize = require('express-mongo-sanitize');
 
 const userRoutes = require('./routes/users')
 const campgroundsRoutes = require('./routes/campgrounds')
@@ -48,9 +48,10 @@ app.use(express.urlencoded({extended:true}))
 app.use(methodOverride('_method'));
 app.use(express.static(path.join(__dirname,'public')))
 
-app.use(monogoSanitize({
-    replaceWith:'_'
+app.use(mongoSanitize({
+    replaceWith: '_'
 }));
+
 
 const store = MongoStore.create({
     mongoUrl: dbUrl,
