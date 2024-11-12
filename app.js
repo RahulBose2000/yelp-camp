@@ -175,7 +175,7 @@ app.use((err, req, res, next) => {
     res.status(statusCode).render('error', { err })
 })
 
-const port = process.env.PORT || 8080;
+const port = process.env.PORT || 5050;
 app.listen(port,()=>{
-    console.log('http://localhost:8080');
+    console.log('http://localhost:5050');
 })
