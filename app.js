@@ -21,8 +21,12 @@ const userRoutes = require('./routes/users')
 const campgroundsRoutes = require('./routes/campgrounds')
 const reviewsRoutes = require('./routes/reviews')
 const helmet = require('helmet')
+const MongoStore = require('connect-mongo');
 
-mongoose.connect('mongodb://localhost:27017/yelp-camp2',{
+// const dbURL = process.env.DB_URL;
+const dbUrl = process.env.DB_URL||"mongodb://localhost:27017/yelp-camp2";
+
+mongoose.connect(dbUrl,{
     useNewUrlParser:true,
     useUnifiedTopology:true,
    
@@ -31,6 +35,7 @@ mongoose.connect('mongodb://localhost:27017/yelp-camp2',{
 const db = mongoose.connection;
 db.on("error",console.error.bind(console,'connection errror:'));
 db.once('open',()=>{
+    
     console.log('Database connected');
 });
 
@@ -51,8 +56,20 @@ app.use(monogoSanitize({
     replaceWith:'_'
 }));
 
+const store = MongoStore.create({
+    mongoUrl: dbUrl,
+    touchAfter: 24 * 60 * 60,
+    crypto: { secret: process.env.SESSION_SECRET || 'thisshouldbeabettersecret!' },
+});
+
+store.on("error",function(e){
+    console.log('session store error',e);
+})
+
 const sessionConfig = {
-    secret:'thisshouldbeabettersecret!',
+    store,
+    name:'session',
+    secret: process.env.SESSION_SECRET || 'thisshouldbeabettersecret!',
     resave:false,
     saveUninitialized:true,
     cookie:{
@@ -156,15 +173,12 @@ app.all(/(.*)/,(req,res,next)=>{
 })
 
 app.use((err, req, res, next) => {
-    console.error(err);  // Log the error stack to the server log, but not to the client
+    const { statusCode = 500 } = err;
+    if (!err.message) err.message = 'Oh No, Something Went Wrong!'
+    res.status(statusCode).render('error', { err })
+})
 
-    // Render the error page, but remove stack trace if in production
-    const errorDetails = process.env.NODE_ENV !== 'production' ? err.stack : 'Something went wrong. Please try again later.';
-
-    // Render the error page, passing the error message and stack trace if needed
-    res.status(err.status || 500).render('error', { err: { message: err.message, details: errorDetails } });
-});
-
-app.listen('8080',()=>{
+const port = process.env.PORT || 8080;
+app.listen(port,()=>{
     console.log('http://localhost:8080');
 })
