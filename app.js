@@ -25,6 +25,9 @@ const MongoStore = require('connect-mongo');
 
 // const dbURL = process.env.DB_URL;
 const dbUrl = process.env.DB_URL||"mongodb://localhost:27017/yelp-camp2";
+if (!dbUrl) {
+    throw new Error("❌ DB_URL is missing! Set it in Render Environment Variables.");
+}
 
 mongoose.connect(dbUrl);
 
