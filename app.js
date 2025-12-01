@@ -177,5 +177,5 @@ app.use((err, req, res, next) => {
 
 const port = process.env.PORT || 5050;
 app.listen(port,()=>{
-   console.log(`http://localhost:5050${port}`);
+  console.log(`http://localhost:${port}`);
 })
